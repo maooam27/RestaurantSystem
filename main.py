@@ -20,8 +20,8 @@ def SelectProduct(product):
         return messagebox.showinfo("Error", "Fill operator code and table number")
     database = sqlite3.connect("CurrentDay.db")
     cursor = database.cursor()
-    cursor.execute(f"INSERT INTO orders VALUES (NULL, {n_table.get()}, {time.strftime('%H:%M:%S')}, "
-                   f"{operator_name.get()}, {product}")
+    cursor.execute(f"INSERT INTO orders VALUES (NULL, '{n_table.get()}', '{str(time.strftime('%H:%M:%S'))}',"
+                   f" '{operator_name.get()}', '{product}')")
     print(n_table.get(), time.strftime('%H:%M:%S'), operator_name.get(), product)
     database.commit()
     database.close()
