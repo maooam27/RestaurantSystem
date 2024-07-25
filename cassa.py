@@ -10,9 +10,12 @@ root.geometry("800x600")
 
 current_order = ""
 
+
+# Clear the database and autoincrement
 db = sqlite3.connect("CurrentDay.db")
 cursor = db.cursor()
 cursor.execute("DELETE FROM orders")
+cursor.execute("DELETE FROM sqlite_sequence WHERE name='orders'")
 db.commit()
 db.close()
 
