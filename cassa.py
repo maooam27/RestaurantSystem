@@ -2,10 +2,19 @@ import time
 from tkinter import *
 import sqlite3
 import tkinter.messagebox as messagebox
+import socket
 
 root = Tk()
 root.title("Cassa")
 root.geometry("800x600")
+
+current_order = ""
+
+db = sqlite3.connect("CurrentDay.db")
+cursor = db.cursor()
+cursor.execute("DELETE FROM orders")
+db.commit()
+db.close()
 
 
 def update_time():
@@ -15,16 +24,31 @@ def update_time():
 
 
 def SelectProduct(product):
+    global current_order
+    current_order += product + ", "
+
+
+def SendOrder():
+    global current_order
     if (operator_name.get() == "" or n_table.get() == "") or (" " in operator_name.get() or " " in n_table.get()):
         print("Fill operator code and table number")
         return messagebox.showinfo("Error", "Fill operator code and table number")
+    elif current_order == "":
+        print("Select a product")
+        return messagebox.showinfo("Error", "Select a product")
     database = sqlite3.connect("CurrentDay.db")
     cursor = database.cursor()
     cursor.execute(f"INSERT INTO orders VALUES (NULL, '{n_table.get()}', '{str(time.strftime('%H:%M:%S'))}',"
-                   f" '{operator_name.get()}', '{product}')")
-    print(n_table.get(), time.strftime('%H:%M:%S'), operator_name.get(), product)
+                   f" '{operator_name.get()}', '{current_order}')")
+    print(n_table.get(), time.strftime('%H:%M:%S'), operator_name.get(), current_order)
     database.commit()
     database.close()
+    current_order = ""
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.connect(('localhost', 4384))
+    s.sendall(b"Order sent")
+    s.close()
+    return
 
 
 # Operator name
@@ -44,6 +68,9 @@ n_table.pack(side=RIGHT, padx=10)
 
 table_label = Label(op_zone, text="Table:")
 table_label.pack(side=RIGHT, padx=10)
+
+send_order = Button(op_zone, text="Send Order", command=SendOrder)
+send_order.pack(side=RIGHT, padx=10)
 
 # Product list
 product_zone = Frame(root, width=800, height=400)
