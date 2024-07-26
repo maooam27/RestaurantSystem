@@ -65,8 +65,9 @@ def division():
     return
 
 
+# noinspection DuplicatedCode
 def SendOrder():
-    global current_order, current_price
+    global current_order, current_price, actual_order, bar_orders, pizzeria_orders, kitchen_orders
     if (operator_name.get() == "" or n_table.get() == "") or (" " in operator_name.get() or " " in n_table.get()):
         print("Fill operator code and table number")
         return messagebox.showinfo("Error", "Fill operator code and table number")
@@ -76,25 +77,48 @@ def SendOrder():
 
     division()
 
-    '''
     # Server management
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.connect(('localhost', bar_port))
-    s.sendall(b"Order sent")
-    s.close()
-    database = sqlite3.connect("CurrentDay.db")
+
+    # Bar
+    if bar_orders:
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.connect(('localhost', bar_port))
+        s.sendall(f"From table: {n_table.get()}\n".encode())
+        for i in range(len(bar_orders)):
+            s.sendall(f"\t{bar_orders[i]}\n".encode())
+        s.close()
+    # Pizzeria
+    if pizzeria_orders:
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.connect(('localhost', pizzeria_port))
+        s.sendall(f"From table: {n_table.get()}\n".encode())
+        for i in range(len(pizzeria_orders)):
+            s.sendall(f"\t{pizzeria_orders[i]}\n".encode())
+        s.close()
+    # Kitchen
+    if kitchen_orders:
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.connect(('localhost', kitchen_port))
+        s.sendall(f"From table: {n_table.get()}\n".encode())
+        for i in range(len(kitchen_orders)):
+            s.sendall(f"\t{kitchen_orders[i]}\n".encode())
+        s.close()
 
     # Database management
+    database = sqlite3.connect("CurrentDay.db")
     c = database.cursor()
     c.execute(f"INSERT INTO orders VALUES (NULL, '{n_table.get()}', '{str(time.strftime('%H:%M:%S'))}',"
               f" '{operator_name.get()}', '{current_order}', {current_price})")
     print(n_table.get(), time.strftime('%H:%M:%S'), operator_name.get(), current_order)
     database.commit()
     database.close()
-    '''
 
     current_order = ""
     current_price = 0.0
+    actual_order = []
+    bar_orders = []
+    pizzeria_orders = []
+    kitchen_orders = []
     return
 
 
@@ -120,6 +144,8 @@ send_order = Button(op_zone, text="Send Order", command=SendOrder)
 send_order.pack(side=RIGHT, padx=10)
 
 # Product list
+
+# Bar
 product_zone = Frame(root, width=800, height=400)
 product_zone.pack()
 
@@ -140,6 +166,58 @@ birra.grid(row=0, column=4, padx=3, pady=10)
 
 fanta = Button(product_zone, text="Fanta", width=10, height=5, command=lambda: SelectProduct("Fanta", 3.5))
 fanta.grid(row=0, column=5, padx=3, pady=10)
+
+
+product_zone2 = Frame(root, width=800, height=400)
+product_zone2.pack()
+
+margherita = Button(product_zone, text="Margherita", width=10, height=5,
+                    command=lambda: SelectProduct("Margherita", 4.5))
+margherita.grid(row=1, column=0, padx=3, pady=10)
+
+marinara = Button(product_zone, text="Marinara", width=10, height=5,
+                  command=lambda: SelectProduct("Marinara", 5.0))
+marinara.grid(row=1, column=1, padx=3, pady=10)
+
+diavola = Button(product_zone, text="Diavola", width=10, height=5,
+                 command=lambda: SelectProduct("Diavola", 5.5))
+diavola.grid(row=1, column=2, padx=3, pady=10)
+
+viennese = Button(product_zone, text="Viennese", width=10, height=5,
+                  command=lambda: SelectProduct("Viennese", 5.5))
+viennese.grid(row=1, column=3, padx=3, pady=10)
+
+capricciosa = Button(product_zone, text="Capricciosa", width=10, height=5,
+                     command=lambda: SelectProduct("Capricciosa", 5.0))
+capricciosa.grid(row=1, column=4, padx=3, pady=10)
+
+quattro_stagioni = Button(product_zone, text="Quattro Stagioni", width=10, height=5,
+                          command=lambda: SelectProduct("Quattro Stagioni", 5.5))
+quattro_stagioni.grid(row=1, column=5, padx=3, pady=10)
+
+
+product_zone3 = Frame(root, width=800, height=400)
+product_zone3.pack()
+
+spaghetti = Button(product_zone, text="Spaghetti", width=10, height=5, command=lambda: SelectProduct("Spaghetti", 10.0))
+spaghetti.grid(row=2, column=0, padx=3, pady=10)
+
+penne = Button(product_zone, text="Penne", width=10, height=5, command=lambda: SelectProduct("Penne", 10.0))
+penne.grid(row=2, column=1, padx=3, pady=10)
+
+risotto = Button(product_zone, text="Risotto", width=10, height=5, command=lambda: SelectProduct("Risotto", 9.0))
+risotto.grid(row=2, column=2, padx=3, pady=10)
+
+tagliatelle = Button(product_zone, text="Tagliatelle", width=10, height=5,
+                     command=lambda: SelectProduct("Tagliatelle", 10.0))
+tagliatelle.grid(row=2, column=3, padx=3, pady=10)
+
+lasagne = Button(product_zone, text="Lasagne", width=10, height=5, command=lambda: SelectProduct("Lasagne", 12.0))
+lasagne.grid(row=2, column=4, padx=3, pady=10)
+
+ravioli = Button(product_zone, text="Ravioli", width=10, height=5, command=lambda: SelectProduct("Ravioli", 10.5))
+ravioli.grid(row=2, column=5, padx=3, pady=10)
+
 
 if __name__ == "__main__":
     update_time()
