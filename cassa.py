@@ -29,6 +29,7 @@ def update_time():
 def SelectProduct(product):
     global current_order
     current_order += product + ", "
+    return
 
 
 def SendOrder():

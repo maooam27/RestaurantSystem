@@ -10,7 +10,6 @@ while True:
     conn, addr = s.accept()
     print(f"Connection from {addr}")
     data = conn.recv(1024).decode()
-    print(data)
     if data == "Order sent":
         print("Order sent")
     conn.close()
