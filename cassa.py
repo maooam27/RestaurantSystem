@@ -35,6 +35,32 @@ db.commit()
 db.close()
 
 
+def pay_table():
+    if table_paying.get() == "" or " " in table_paying.get():
+        return messagebox.showinfo("Error", "Insert the table number")
+    db = sqlite3.connect("CurrentDay.db")
+    curs = db.cursor()
+    curs.execute(f"SELECT * FROM orders WHERE table_number = {table_paying.get()}")
+    orders = curs.fetchall()
+    db.commit()
+    db.close()
+
+    if not orders:
+        return messagebox.showinfo("Error", "Table not found")
+
+    total_price = 0.0
+    for order in orders:
+        total_price += order[6]
+
+    db = sqlite3.connect("CurrentDay.db")
+    cursor = db.cursor()
+    cursor.execute(f"DELETE FROM orders WHERE table_number = {table_paying.get()}")
+    db.commit()
+    db.close()
+
+    return messagebox.showinfo("Payment", f"Table {table_paying.get()} paid {total_price}€")
+
+
 def update_time():
     current_time = time.strftime('%H:%M:%S')
     clock_label.config(text=str(current_time))
@@ -218,6 +244,18 @@ lasagne.grid(row=2, column=4, padx=3, pady=10)
 ravioli = Button(product_zone, text="Ravioli", width=10, height=5, command=lambda: SelectProduct("Ravioli", 10.5))
 ravioli.grid(row=2, column=5, padx=3, pady=10)
 
+
+pay_zone = Frame(root, width=800, height=100)
+pay_zone.pack(pady=10, anchor=W, fill=X)
+
+pay_button = Button(pay_zone, text="Paga", command=pay_table)
+pay_button.pack(side=RIGHT, padx=10)
+
+table_paying = Entry(pay_zone, width=3)
+table_paying.pack(side=RIGHT, padx=10)
+
+# TODO: search for data in the database of the day
+# https://www.sqlitetutorial.net/sqlite-python/sqlite-python-select/
 
 if __name__ == "__main__":
     update_time()
