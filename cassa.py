@@ -5,14 +5,26 @@ import tkinter.messagebox as messagebox
 import socket
 
 bar_port = 25728
-
-root = Tk()
-root.title("Cassa")
-root.geometry("800x600")
+pizzeria_port = 25729
+kitchen_port = 25730
 
 current_order = ""
 actual_order = []
 current_price: float = 0.0
+
+menu = {
+    "bar": ["Lambrusco", "Rosso", "Bianco", "Bollicine", "Birra", "Fanta"],
+    "pizzeria": ["Margherita", "Marinara", "Diavola", "Viennese", "Capricciosa", "Quattro Stagioni"],
+    "cucina": ["Spaghetti", "Penne", "Risotto", "Tagliatelle", "Lasagne", "Ravioli"]
+}
+
+bar_orders = []
+pizzeria_orders = []
+kitchen_orders = []
+
+root = Tk()
+root.title("Cassa")
+root.geometry("800x600")
 
 # Clear the database and autoincrement
 db = sqlite3.connect("CurrentDay.db")
@@ -37,11 +49,20 @@ def SelectProduct(product, price):
 
 
 def division():
-    global actual_order, current_order
+    global actual_order, current_order, bar_orders
     actual_order = current_order.split(", ")
     for i in range(len(actual_order)):
-        print(actual_order[i])
-    print("Done")
+        if actual_order[i] == "":
+            actual_order.pop(i)
+            continue
+        if actual_order[i] in menu["bar"]:
+            bar_orders.append(actual_order[i])
+        elif actual_order[i] in menu["pizzeria"]:
+            pizzeria_orders.append(actual_order[i])
+        elif actual_order[i] in menu["cucina"]:
+            kitchen_orders.append(actual_order[i])
+
+    return
 
 
 def SendOrder():
