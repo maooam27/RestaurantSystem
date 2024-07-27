@@ -25,6 +25,7 @@ kitchen_orders = []
 root = Tk()
 root.title("Cassa")
 root.geometry("800x600")
+root.resizable(False, False)
 
 # Clear the database and autoincrement
 db = sqlite3.connect("CurrentDay.db")
@@ -38,25 +39,27 @@ db.close()
 def pay_table():
     if table_paying.get() == "" or " " in table_paying.get():
         return messagebox.showinfo("Error", "Insert the table number")
-    db = sqlite3.connect("CurrentDay.db")
-    curs = db.cursor()
-    curs.execute(f"SELECT * FROM orders WHERE table_number = {table_paying.get()}")
+    database = sqlite3.connect("CurrentDay.db")
+    curs = database.cursor()
+    curs.execute(f"SELECT * FROM orders WHERE tavolo = {table_paying.get()}")
     orders = curs.fetchall()
-    db.commit()
-    db.close()
+    database.commit()
+    database.close()
+
+    print(orders)
 
     if not orders:
         return messagebox.showinfo("Error", "Table not found")
 
     total_price = 0.0
     for order in orders:
-        total_price += order[6]
+        total_price += order[5]
 
-    db = sqlite3.connect("CurrentDay.db")
-    cursor = db.cursor()
-    cursor.execute(f"DELETE FROM orders WHERE table_number = {table_paying.get()}")
-    db.commit()
-    db.close()
+    database = sqlite3.connect("CurrentDay.db")
+    curs = database.cursor()
+    curs.execute(f"DELETE FROM orders WHERE tavolo = {table_paying.get()}")
+    database.commit()
+    database.close()
 
     return messagebox.showinfo("Payment", f"Table {table_paying.get()} paid {total_price}€")
 
@@ -172,7 +175,7 @@ send_order.pack(side=RIGHT, padx=10)
 # Product list
 
 # Bar
-product_zone = Frame(root, width=800, height=400)
+product_zone = Frame(root, width=800)
 product_zone.pack()
 
 lambrusco = Button(product_zone, text="Lambrusco", width=10, height=5, command=lambda: SelectProduct("Lambrusco", 6.0))
@@ -194,7 +197,7 @@ fanta = Button(product_zone, text="Fanta", width=10, height=5, command=lambda: S
 fanta.grid(row=0, column=5, padx=3, pady=10)
 
 
-product_zone2 = Frame(root, width=800, height=400)
+product_zone2 = Frame(root, width=800)
 product_zone2.pack()
 
 margherita = Button(product_zone, text="Margherita", width=10, height=5,
@@ -222,7 +225,7 @@ quattro_stagioni = Button(product_zone, text="Quattro Stagioni", width=10, heigh
 quattro_stagioni.grid(row=1, column=5, padx=3, pady=10)
 
 
-product_zone3 = Frame(root, width=800, height=400)
+product_zone3 = Frame(root, width=800)
 product_zone3.pack()
 
 spaghetti = Button(product_zone, text="Spaghetti", width=10, height=5, command=lambda: SelectProduct("Spaghetti", 10.0))
@@ -244,18 +247,18 @@ lasagne.grid(row=2, column=4, padx=3, pady=10)
 ravioli = Button(product_zone, text="Ravioli", width=10, height=5, command=lambda: SelectProduct("Ravioli", 10.5))
 ravioli.grid(row=2, column=5, padx=3, pady=10)
 
+# Pay table
+pay_table_frame = Frame(root, width=800)
+pay_table_frame.pack(pady=10, fill=X, anchor=W)
 
-pay_zone = Frame(root, width=800, height=100)
-pay_zone.pack(pady=10, anchor=W, fill=X)
+table_paying_label = Label(pay_table_frame, text="Table Paying:")
+table_paying_label.grid(row=0, column=0, padx=10, pady=10)
 
-pay_button = Button(pay_zone, text="Paga", command=pay_table)
-pay_button.pack(side=RIGHT, padx=10)
+table_paying = Entry(pay_table_frame, width=3)
+table_paying.grid(row=0, column=1, padx=10, pady=10)
 
-table_paying = Entry(pay_zone, width=3)
-table_paying.pack(side=RIGHT, padx=10)
-
-# TODO: search for data in the database of the day
-# https://www.sqlitetutorial.net/sqlite-python/sqlite-python-select/
+pay_button = Button(pay_table_frame, text="Pay", command=pay_table)
+pay_button.grid(row=0, column=2, padx=10, pady=10)
 
 if __name__ == "__main__":
     update_time()
